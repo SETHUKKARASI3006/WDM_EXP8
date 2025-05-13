@@ -1,6 +1,7 @@
 ### EX8 Web Scraping On E-commerce platform using BeautifulSoup
-### DATE: 
-### AIM: To perform Web Scraping on Amazon using (beautifulsoup) Python.
+### DATE: 10-05-2025
+### AIM: 
+To perform Web Scraping on Snapdeal using (beautifulsoup) Python.
 ### Description: 
 <div align = "justify">
 Web scraping is the process of extracting data from various websites and parsing it. In other words, it’s a technique 
@@ -37,23 +38,50 @@ def convert_price_to_float(price):
     return float(price) if price else 0.0
 
 def get_amazon_products(search_query):
-    base_url = 'https://www.amazon.in'
+    base_url = 'https://www.snapdeal.com/'
     headers = {
         'User-Agent': 'Your User Agent'  # Add your User Agent here
     }
 
-    search_query = search_query.replace(' ', '+')
-    url = f'{base_url}/s?k={search_query}'
+    search_query = search_query.replace(' ', '-')
+    url = f'{base_url}/products/{search_query}'
 
     response = requests.get(url, headers=headers)
     products_data = []  # List to store product information
 
     if response.status_code == 200:
-        /* TYPE YOUR CODE HERE
+        # TYPE YOUR CODE HERE
+        soup = BeautifulSoup(response.content, 'html.parser')
+        products = soup.find_all('div', {'class': 'product-tuple-listing'})
+
+        for product in products:
+            title = product.find('p', {'class': 'product-title'})
+            price = product.find('span', {'class': 'product-price'})
+            if price:
+                product_price = convert_price_to_float(price.get('data-price', '0'))
+            else:
+                product_price = 0.0  # Default to 0 if no price found
+            rating = product.find('div', {'class': 'filled-stars'})  # Assuming rating is shown with this class
+
+            if title and price:
+                product_name = title.text.strip()
+                #product_price = re.sub(r'[^\d.]', '', price.text.strip())  # Remove non-numeric chars for price
+                product_rating = rating['style'].split(';')[0].split(':')[-1] if rating else "No rating"
+                products_data.append({
+                    'Product': product_name,
+                    'Price': float(product_price),
+                    'Rating': product_rating
+                })
+                print(f'Product: {product_name}')
+                print(f'Price: {product_price}')
+                print(f'Rating: {product_rating}')
+                print('---')
+    else:
+        print('Failed to retrieve content')
 
     return sorted(products_data, key=lambda x: convert_price_to_float(x['Price']))
 
-search_query = input('Enter product to search on Amazon: ')
+search_query = input('Enter product to search on Snapdeal: ')
 products = get_amazon_products(search_query)
 
 # Displaying product data using a bar chart
@@ -75,5 +103,7 @@ else:
 ```
 
 ### Output:
+![sample_output](image.png)
 
 ### Result:
+Thus, web scraping in snapdeal using (Beautiful Soup) Python is performed successfully.
